@@ -1,0 +1,38 @@
+:root {
+    --main-bg-color: #333333;
+    --main-bg-emphasis: #231602;
+    --main-bg-light: #523602;
+    --docs-background: #445965;
+    --secondary-bg-color: #b8aca5;
+    --accent-color: #b7cf9c;
+    --accent-color2: #ac9e95;
+    --text-color: #fef9d0;
+    --highlight-text: #f6deb6;
+    --accent-orange: #da523a;
+}
+.subheading {
+    color: var(--main-bg-color);
+}
+.ft-text {
+    color: var(--text-color);
+    max-width: 1024px;
+}
+body {
+  background-color: var(--main-bg-color);
+  color: var(--highlight-text);
+}
+.footer {
+     position: relative;
+    height: 300px;
+    width: 100%;
+    background-color: #333333;
+}
+.copyright-text {
+   position: absolute;
+        width: 100%;
+        color: #fff;
+        line-height: 40px;
+        font-size: 0.7em;
+        text-align: center;
+        bottom:0;
+}
