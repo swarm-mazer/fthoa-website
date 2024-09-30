@@ -36,3 +36,9 @@ body {
         text-align: center;
         bottom:0;
 }
+
+.map-container img {
+   max-width: 100%; /* Make the image fit the width */
+    max-height: 100%; /* Make the image fit the height */
+    object-fit: contain; /* Scale the image to fit without cropping */
+}

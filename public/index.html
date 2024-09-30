@@ -17,22 +17,27 @@
     <script defer src="/__/firebase/10.13.2/firebase-analytics-compat.js"></script>
     <script defer src="/__/firebase/10.13.2/firebase-remote-config-compat.js"></script>
     <script defer src="/__/firebase/10.13.2/firebase-performance-compat.js"></script>
-     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script defer src="js/jquery-3.6.0.min.js"></script>
+    <script defer src="js/popper-2.11.6.min.js"></script>
+    <script defer src="js/bootstrap-5.3.0.bundle.min.js"></script>
     <script defer src="js/global.js"></script>
     <!--
       initialize the SDK after all desired features are loaded, set useEmulator to false
       to avoid connecting the SDK to running emulators.
     -->
-<script defer src="/__/firebase/init.js?useEmulator=true"></script>
-<link rel="stylesheet" href="css/bootstrap-5.3.3.min.css">
-<link rel="stylesheet" href="css/style.css">
+    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
+    <link rel="stylesheet" href="css/bootstrap-5.3.3.min.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
     <body>
         <div id="user-info" class="text-end p-1 row">
             <div class="col"><span id="user-status">Loading...</span></div>
             <div class="col-auto">
                  <div class="d-flex justify-content-center">
+                      <!-- New Account Button -->
+                    <button id="new-account-button" class="btn btn-success me-3 btn-sm">
+                      <i class="fab fa-new-account"></i> Create a New Account
+                    </button>
                     <!-- Google Sign-In Button -->
                     <button id="login-google-button" class="btn btn-danger me-3 btn-sm">
                       <i class="fab fa-google"></i> Login with Google
@@ -41,7 +46,6 @@
                     <button id="login-userpass-button" class="btn btn-primary me-3 btn-sm">
                       <i class="fas fa-user"></i> Login with Username/Password
                     </button>
-
                     <!-- Logout Button -->
                     <button id="logout-button" class="btn btn-secondary btn-sm">
                       <i class="fas fa-sign-out-alt"></i> Logout
@@ -67,15 +71,47 @@
           <a id="announcements" class="nav-link" href="javascript:void(0);">Announcements</a>
         </li>
         <li class="nav-item">
-          <a id="documents" class="nav-link" href="javascript:void(0);">Documents</a>
+          <a id="documents" class="nav-link" href="javascript:void(0);">Public Documents</a>
+        </li>
+        <li class="nav-item">
+          <a id="neighborhood_map" class="nav-link" href="javascript:void(0);">Neighborhood Map</a>
         </li>
       </ul>
     </div>
   </div>
 </nav>
-
-        <!-- ^^^ NAVBAR ^^^ -->
-        <div id="page-contents">  </div><!-- Placeholder for the page contents -->
+<!-- ^^^ NAVBAR ^^^ -->
+        <div class="page-contents container pt-3" id="home-container">
+             <div class="container pt-3" style="max-width:1024px;">
+                <h1>Welcome to Forest Trails</h1>
+                 <div id="welcomeText" class="ft-text"></div>
+            </div>
+        </div>
+        <div class="page-contents container pt-3" id="page-announcements-container">
+             <div class="container pt-3" style="max-width:1024px;">
+                <h1>Forest Trails Announcements</h1>
+                <div id="announcementText" class="ft-text"></div>
+            </div>
+        </div>
+        <div class="page-contents container pt-3" id="public-documents-container">
+            <h2 class="mt-4">Public Documents</h2>
+            <table id="public_files" class="table table-bordered table-striped">
+              <thead class="thead-dark">
+                <tr>
+                  <th scope="col">Files</th><th scope="col">Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- You can add rows here -->
+              </tbody>
+            </table>
+        </div>
+        <div class="page-contents container pt-3" id="neighborhood-map-container">
+           <h1>Neighborhood Map</h1>
+            <div id="map-container" class="w-100">
+                <img class="w-100" src="assets/Neighborhood_map.jpg" alt="Description of image">
+            </div>
+        </div>
         <!-- Username and password modal -->
         <div class="modal fade " id="customModal" tabindex="-1" aria-labelledby="customModalLabel" aria-hidden="true">
           <div class="modal-dialog text-dark">
@@ -104,7 +140,78 @@
             </div>
           </div>
         </div>
+        <!-- User Account Request Modal -->
+        <div id="accountRequestModal" class="modal" tabindex="-1" role="dialog">
+          <div class="modal-dialog text-dark" role="document">
+            <div class="modal-content">
+              <div class="modal-header d-flex justify-content-between">
+                    <h5 class="modal-title">Request an Account</h5>
+                    <button type="button" class="new_close_button btn btn-danger btn-sm">Cancel</button>
+                </div>
+              <div class="modal-body">
+                <form id="accountRequestForm">
+                  <div class="form-group">
+                    <label for="new_emailInput" class="small mb-1">Email</label>
+                    <input type="email" class="form-control new-user-form-control" id="new_emailInput" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="new_nameInput" class="small mb-1">Full Name</label>
+                    <input type="text" class="form-control new-user-form-control" id="new_nameInput" required>
+                  </div>
+                  <div class="form-group">
+                      <label for="new_addressSelect" class="small mb-1">Address or Parcel Number</label>
+                      <select class="form-control new-user-form-control" id="new_addressSelect" required>
+                        <option value="">Select your address</option> <!-- Default option -->
+                      </select>
+                    </div>
+                  <div class="form-group">
+                    <label for="new_phoneInput" class="small mb-1">Phone Number (Optional)</label>
+                    <input type="tel" class="form-control new-user-form-control" id="new_phoneInput">
+                  </div>
+                    <div class="form-group">
+                    <label for="consentCheckbox">
+                        <div style="margin-top: 10px;">
+                          <strong>Consent to Notice by Electronic Transmission</strong><br>
+                          The Board of Directors of the Forest Trails Homeowners’ Association has decided to begin using notice by electronic transmission for Association business. Electronic notices are preferred by many owners and help to reduce copying and postage costs for the Association. Per RCW 64.38, the Association must obtain your written consent in order to send you notices electronically, and this authorization will be maintained on file with the Association and/or its professional management company.<br><br>
+                          If you do not provide this consent, you will continue to receive all Association business notices in hard copy form at your property address in the Association and/or any alternate mailing address you have provided. Additionally, access to the materials on this site will be restricted to ensure we are in compliance with applicable law.<br><br>
+                          By electronically consenting, you agree to receive notices from the Forest Trails Homeowners’ Association via electronic transmission in accordance with RCW 64.38. The HOA will never share your contact information with 3rd parties, this email address is for communications between the HOA and member households only.<br><br>
+                          <strong>Consent Acknowledgment:</strong><br>
+                          By checking the box below, you confirm that you have read this document and consent to receiving notices electronically.<br><br>
 
+                        <input type="checkbox" class="new-user-form-control" id="consentCheckbox" required>
+                        I agree to electronic consent and verify that I have read the above agreement to electronic communications.<br><br>
+                        <strong>PLEASE NOTE:</strong> If you wish at any time to revoke your consent, please contact the Association or its management company in writing to indicate that you wish to revoke your consent and return to receiving hard copy notices. Consent will be deemed revoked if the Secretary of the Association or the Community Association Manager are unable to electronically transmit two (2) consecutive meeting notices to the email address(es) provided above.
+                        </div>
+                        </label>
+                    </div>
+
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="new_submitRequestBtn">Submit Request</button>
+                <button type="button" class="btn btn-secondary new_close_button">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Registration Success Modal -->
+        <div class="modal fade" id="registration_successModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
+          <div class="modal-dialog text-dark" role="document">
+            <div class="modal-content">
+              <div class="modal-header d-flex justify-content-between">
+                    <h5 class="modal-title">Success</h5>
+                    <button type="button" class="success_close_button btn btn-danger btn-sm">Cancel</button>
+                </div>
+              </div>
+              <div class="modal-body">
+                Request submitted successfully!
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="success_close_button btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <footer class="footer"> <!-- Footer Section -->
           <div class="footerContainer">
