@@ -103,7 +103,7 @@ async function create_user_request_modal_dialog() {
     } catch (error) {
         console.error('Error fetching addresses:', error);
     }
-    $('#new_submitRequestBtn').on('click', () => {
+    $('#new_account_request_btn').on('click', () => {
         if (validateNewUserForm()) {
             const email = $('#new_emailInput').val().trim();
             const newUserData = {
@@ -136,41 +136,11 @@ async function create_user_request_modal_dialog() {
         $('#accountRequestModal').modal('hide');
     });
 }
-function set_home_page_contents(page_target){
-
-    if (page_target==='home'){
-        $('#home-container').show();
-    } else if (page_target==='announcements'){
-        $('#page-announcements-container').show();
-    } else if (page_target==='documents'){
-        $('#public-documents-container').show();
-        const storage = firebase.storage();
-        function appendTable(storage_reference, docType){
-            const storage_forms_public = storage.ref(storage_reference);
-            storage_forms_public.listAll().then((res) => {
-              res.items.forEach((itemRef) => {
-                itemRef.getDownloadURL().then((url) => {
-                  const fileName = itemRef.name;
-                  $('#public_files tbody').append(
-                     `<tr><td><a href="${url}" download="${fileName}">${fileName}</a></td><td>${docType}</td></tr>`
-                  );
-                });
-              });
-            }).catch((error) => {
-              console.error('Error listing files:', error);
-            });
-        }
-        appendTable('public/forms', 'Form');
-        appendTable('public/documents', 'Document');
-        sortTableRowsByColumn('public_files', 0);
-    } else if (page_target==='neighborhood_map'){
-        $('#neighborhood-map-container').show();
-    }
-}
-$('.nav-link').on('click',(event)=>{
-    $('.page-contents').hide()
-    set_home_page_contents(event.currentTarget.id);
-});
+$.fn.showWithEvent = function() {
+    this.show(); // Show the element
+    this.trigger('shown'); // Trigger the custom event
+    return this; // Enable chaining
+};
 $(document).ready(() => {
     //Load text contents:
     $.get('assets/welcome.txt', function(data) {
@@ -181,8 +151,6 @@ $(document).ready(() => {
         // Replace newlines (\n) with <br> tags and insert into the div
         $('#announcementText').html(data.replace(/\n/g, '<br>'));
     });
-    $('.page-contents').hide()
-    set_home_page_contents('home');
 
     //Enable firebase SDK
      //firebase.auth().onAuthStateChanged(user => {     });
@@ -217,11 +185,13 @@ $(document).ready(() => {
     firebase.auth().onAuthStateChanged(user => {
       if (user) {
          $('#user-status').html(`<p>Hello, ${user.displayName}</p>`);
+         $('#new-account-button').hide();
          $('#login-google-button').hide();
          $('#login-userpass-button').hide();
          $('#logout-button').show();
       } else {
-         $('#user-status').html('You are not logged in');
+         $('#user-status').html('You are not logged in: ');
+         $('#new-account-button').show();
          $('#login-google-button').show();
          $('#login-userpass-button').show();
          $('#logout-button').hide();
@@ -236,11 +206,9 @@ $(document).ready(() => {
           });
     });
     $('#login-userpass-button').on('click', (event)=>{
-    // Trigger the modal creation when clicking a button (this button should be in your HTML)
         create_userpassword_modal_dialog();
     });
     $('#new-account-button').on('click', (event)=>{
-    // Trigger the modal creation when clicking a button (this button should be in your HTML)
         create_user_request_modal_dialog();
     });
      $('#logout-button').on('click', (event)=>{
@@ -251,6 +219,45 @@ $(document).ready(() => {
             console.error("Logout failed:", error);
         });
     });
+
+    $('#public-documents').on('shown',()=>{
+            console.log('Load Documents...')
+             $('#public_files tbody').empty();
+            const storage = firebase.storage();
+            function appendTable(storage_reference, docType){
+                const storage_forms_public = storage.ref(storage_reference);
+                storage_forms_public.listAll().then((res) => {
+                  res.items.forEach((itemRef) => {
+                    itemRef.getDownloadURL().then((url) => {
+                      const fileName = itemRef.name;
+                      $('#public_files tbody').append(
+                         `<tr><td><a href="${url}" download="${fileName}">${fileName}</a></td><td>${docType}</td></tr>`
+                      );
+                    });
+                  });
+                }).catch((error) => {
+                  console.error('Error listing files:', error);
+                });
+            }
+            appendTable('public/forms', 'Form');
+            appendTable('public/documents', 'Document');
+            sortTableRowsByColumn('public_files', 0);
+    });
+});
+function navigateToSection(section) {
+    $('.page-contents').hide();
+    $('#' + section).showWithEvent();;
+}
+
+// On page load, handle the route
+$(window).on('load', function() {
+    const route = window.location.hash.substring(1);
+    navigateToSection(route || 'home');
 });
 
+// Listen for hash changes in the URL
+$(window).on('hashchange', function() {
+    const route = window.location.hash.substring(1);
+    navigateToSection(route || 'home');
+});
 
